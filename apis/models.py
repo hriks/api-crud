@@ -25,7 +25,7 @@ class Inventory(models.Model):
         super(Inventory, self).save(*args, **kwargs)
 
     @classmethod
-    def addInventory(cls, *args, **kwargs):
+    def addBox(cls, *args, **kwargs):
         return cls.objects.create(*args, **kwargs)
 
     def assignReferenceNumber(self):
