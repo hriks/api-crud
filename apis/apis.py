@@ -11,9 +11,8 @@ from .models import Inventory
 from django.db.models import F
 
 UPDATE_FIELDS = ['height', 'width', 'length']
-FILTERS = [
-    'length', 'width', 'height', 'area', 'volume', 'created_by', 'created']
-FILTERS_METHODS = ['lte', 'gte']
+COMMON_FILTERS = ['length', 'width', 'height', 'area', 'volume']
+FILTERS = COMMON_FILTERS + ['created_by', 'created']
 
 
 class ADD(views.View):
@@ -115,11 +114,23 @@ class All(views.View):
         try:
             data = request.GET.dict()
             inventories = Inventory.objects.all()
+            if True in [
+                field.split(
+                    '__')[0] in FILTERS for field, value in data.items()
+            ]:
+                filters_fields = list(
+                    set(data.keys()).intersection(set(FILTERS)))
+                params = dict()
+                for field in filters_fields:
+                    params.update(
+                        {'{0}'.format(field): data.get(field)}
+                    )
+                inventories = inventories.filter(**params)
             if user.is_staff:
                 inventories = inventories.annotate(
-                    created_by_ussr=F('created_by__username')
+                    created_by_user=F('created_by__username')
                 ).values(
-                    'created_by_ussr', 'length', 'height', 'width', 'volume',
+                    'created_by_user', 'length', 'height', 'width', 'volume',
                     'area', 'modified'
                 )
             else:
@@ -134,42 +145,40 @@ class All(views.View):
             )
 
 
-class Filters(views.View):
+class MyBoxes(views.View):
 
     @method_decorator(auth_required)
     def dispatch(self, request, user, *args, **kwargs):
-        return super(Filters, self).dispatch(request, user, *args, **kwargs)
+        return super(MyBoxes, self).dispatch(request, user, *args, **kwargs)
 
     def get(self, request, user, *args, **kwargs):
         try:
             data = request.GET.dict()
-            assert True in [
+            if not user.is_staff:
+                raise AdminAccessException("User must be staff to add box")
+            inventories = Inventory.objects.filter(created_by=user)
+            if True in [
                 field.split(
-                    '__')[0] in FILTERS for field, value in data.items()
-            ], "INVN009"
-            filters_fileds = list(
-                set(data.keys()).intersection(set(FILTERS)))
-            params = dict()
-            for field in filters_fileds:
-                params.update(
-                    {'{0}'.format(field): data.get(field)}
-                )
-            inventories = Inventory.objects.filter(**params)
-            if user.is_staff:
-                inventories = inventories.annotate(
-                    created_by_ussr=F('created_by__username')
-                ).values(
-                    'created_by_ussr', 'length', 'height', 'width', 'volume',
-                    'area', 'modified'
-                )
-            else:
-                inventories = inventories.values(
-                    'length', 'height', 'width', 'volume', 'area'
-                )
+                    '__')[0] in COMMON_FILTERS for field, value in data.items()
+            ]:
+                filters_fields = list(
+                    set(data.keys()).intersection(set(COMMON_FILTERS)))
+                params = dict()
+                for field in filters_fields:
+                    params.update(
+                        {'{0}'.format(field): data.get(field)}
+                    )
+                inventories = inventories.filter(**params)
+            inventories = inventories.annotate(
+                created_by_user=F('created_by__username')
+            ).values(
+                'created_by_user', 'length', 'height', 'width', 'volume',
+                'area', 'modified'
+            )
             return make_success_response(
                 data, {'inventories': list(inventories)}, 200)
-        except AssertionError as e:
-            return make_exc_response(data, str(e), 403)
+        except AdminAccessException:
+            return make_exc_response(data, "INVN004", 403)
         except Exception as e:
             return make_exc_response(
                 data, "INVN000", 500, str(e)

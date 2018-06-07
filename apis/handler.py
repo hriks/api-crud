@@ -34,8 +34,6 @@ def make_exc_response(
     }
     if data.get('reference_no'):
         response['reference_no'] = data.get('reference_no')
-    else:
-        response['reference_no'] = "Invalid"
     return JsonResponse(response, status=status_code)
 
 

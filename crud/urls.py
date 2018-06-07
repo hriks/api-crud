@@ -7,5 +7,5 @@ urlpatterns = [
     url(r'^box/add', apis.ADD.as_view()),
     url(r'^box/update', apis.Update.as_view()),
     url(r'^box/all', apis.All.as_view()),
-    url(r'^box/filter', apis.Filters.as_view()),
+    url(r'^box/myboxes', apis.MyBoxes.as_view()),
 ]
