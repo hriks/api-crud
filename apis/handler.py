@@ -13,13 +13,15 @@ ERROR_CODES = {
     "INVN006": "No fields are provided to update",
     "INVN007": "No Box found in Inventory with reference_no or reference_no not provided!",  # noqa
     "INVN008": "Invalid value for fields are provided",
-    "INVN009": "Invalid Filter provided",
-    "INVN010": "Invalid Filter method. This should be less or greater",
-    "INVN011": "Filter method not provided"
+    "INVN009": "Box does not associated with requested user"
 }
 
 
 class AdminAccessException(Exception):
+    pass
+
+
+class InventoryAccessException(Exception):
     pass
 
 
@@ -30,7 +32,8 @@ def make_exc_response(
         "error_code": error_code,
         "error_message": (
             str(excpetion) if settings.DEBUG and status_code == 500 and excpetion else ERROR_CODES[error_code] + reason  # noqa
-        )
+        ),
+        "status_code": status_code
     }
     if data.get('reference_no'):
         response['reference_no'] = data.get('reference_no')
@@ -39,7 +42,8 @@ def make_exc_response(
 
 def make_success_response(data, response, status):
     response.update({
-        "success_message": "Request processed successfully!"
+        "success_message": "Request processed successfully!",
+        "status_code": status
     })
     if data.get('reference_no'):
         response['reference_no'] = data.get('reference_no')

@@ -2,7 +2,8 @@ from __future__ import unicode_literals
 
 from .handler import (
     AdminAccessException, make_exc_response,
-    make_success_response, auth_required
+    make_success_response, auth_required,
+    InventoryAccessException
 )
 from django.utils.decorators import method_decorator
 from django import views
@@ -96,8 +97,8 @@ class Update(views.View):
             return make_exc_response(data, "INVN007", 403)
         except AssertionError as e:
             return make_exc_response(data, str(e), 403)
-        except AdminAccessException:
-            return make_exc_response(data, "INVN004", 403)
+        except AdminAccessException as e:
+            return make_exc_response(data, "INVN004", 403, str(e))
         except Exception as e:
             return make_exc_response(
                 data, "INVN000", 500, str(e)
@@ -131,7 +132,7 @@ class All(views.View):
                     created_by_user=F('created_by__username')
                 ).values(
                     'created_by_user', 'length', 'height', 'width', 'volume',
-                    'area', 'modified'
+                    'area', 'modified', 'reference_no'
                 )
             else:
                 inventories = inventories.values(
@@ -173,12 +174,44 @@ class MyBoxes(views.View):
                 created_by_user=F('created_by__username')
             ).values(
                 'created_by_user', 'length', 'height', 'width', 'volume',
-                'area', 'modified'
+                'area', 'modified', 'reference_no'
             )
             return make_success_response(
                 data, {'inventories': list(inventories)}, 200)
+        except AdminAccessException as e:
+            return make_exc_response(data, "INVN004", 403, str(e))
+        except Exception as e:
+            return make_exc_response(
+                data, "INVN000", 500, str(e)
+            )
+
+
+class Delete(views.View):
+
+    @method_decorator(views.decorators.csrf.csrf_exempt)
+    @method_decorator(auth_required)
+    def dispatch(self, request, user, *args, **kwargs):
+        return super(Delete, self).dispatch(request, user, *args, **kwargs)
+
+    def post(self, request, user, *args, **kwargs):
+        try:
+            data = request.POST.dict()
+            inventory = Inventory.objects.get(
+                reference_no=data.get('reference_no'))
+            if not inventory.created_by == user:
+                raise InventoryAccessException(
+                    "Box creator Exception")
+            inventory.delete()
+            return make_success_response(
+                data, {
+                    "status": "Deleted Successfully!"
+                }, 200)
+        except InventoryAccessException as e:
+            return make_exc_response(data, "INVN009", 403, str(e))
+        except Inventory.DoesNotExist:
+            return make_exc_response(data, "INVN007", 403)
         except AdminAccessException:
-            return make_exc_response(data, "INVN004", 403)
+            return make_exc_response(data, "INVN004", 403, str(e))
         except Exception as e:
             return make_exc_response(
                 data, "INVN000", 500, str(e)
