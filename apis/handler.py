@@ -12,7 +12,10 @@ ERROR_CODES = {
     "INVN005": "Either height, width or length not provided.",
     "INVN006": "No fields are provided to update",
     "INVN007": "No Box found in Inventory with reference_no or reference_no not provided!",  # noqa
-    "INVN008": "Invalid value for fields are provided"
+    "INVN008": "Invalid value for fields are provided",
+    "INVN009": "Invalid Filter provided",
+    "INVN010": "Invalid Filter method. This should be less or greater",
+    "INVN011": "Filter method not provided"
 }
 
 
