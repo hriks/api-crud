@@ -8,6 +8,7 @@ from django.utils.decorators import method_decorator
 from django import views
 
 from .models import Inventory
+from django.db.models import F
 
 UPDATE_FIELDS = ['height', 'width', 'length']
 
@@ -41,8 +42,8 @@ class ADD(views.View):
             assert width.isdigit() and width is not None, "INVN005"
             assert length.isdigit() and length is not None, "INVN005"
             inventory = Inventory.addBox(**{
-                'height': height, 'width': width, 'length': length,
-                'created_by': user
+                'height': float(height), 'width': float(width),
+                'length': float(length), 'created_by': user
             })
             response = {
                 "reference_no": inventory.reference_no,
@@ -95,6 +96,35 @@ class Update(views.View):
             return make_exc_response(data, str(e), 403)
         except AdminAccessException:
             return make_exc_response(data, "INVN004", 403)
+        except Exception as e:
+            return make_exc_response(
+                data, "INVN000", 500, e
+            )
+
+
+class All(views.View):
+
+    @method_decorator(auth_required)
+    def dispatch(self, request, user, *args, **kwargs):
+        return super(All, self).dispatch(request, user, *args, **kwargs)
+
+    def get(self, request, user, *args, **kwargs):
+        try:
+            data = request.GET.dict()
+            inventories = Inventory.objects.all()
+            if user.is_staff:
+                inventories = inventories.annotate(
+                    created_by_ussr=F('created_by__username')
+                ).values(
+                    'created_by_ussr', 'length', 'height', 'width', 'volume',
+                    'area', 'modified'
+                )
+            else:
+                inventories = inventories.values(
+                    'length', 'height', 'width', 'volume', 'area'
+                )
+            return make_success_response(
+                data, {'inventories': list(inventories)}, 200)
         except Exception as e:
             return make_exc_response(
                 data, "INVN000", 500, e

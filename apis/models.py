@@ -12,16 +12,20 @@ class Inventory(models.Model):
     """Add Unit"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     reference_no = models.CharField(max_length=20, null=True, blank=True)
-    length = models.FloatField()
-    height = models.FloatField()
-    width = models.FloatField()
+    length = models.FloatField(default=0.0)
+    height = models.FloatField(default=0.0)
+    width = models.FloatField(default=0.0)
     created_by = models.ForeignKey(User)
     modified = models.DateTimeField(auto_now=True)
+    volume = models.FloatField(default=0.0)
+    area = models.FloatField(default=0.0)
     created = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
         if self.reference_no is None:
             self.assignReferenceNumber()
+        self.volume = self.getVolume()
+        self.area = self.getAarea()
         super(Inventory, self).save(*args, **kwargs)
 
     @classmethod
@@ -30,11 +34,11 @@ class Inventory(models.Model):
 
     def update(self, data):
         if data.get('height'):
-            self.height = data.get('height')
+            self.height = float(data.get('height'))
         if data.get('width'):
-            self.width = data.get('width')
+            self.width = float(data.get('width'))
         if data.get('length'):
-            self.length = data.get('length')
+            self.length = float(data.get('length'))
         self.save()
 
     def assignReferenceNumber(self):
@@ -48,5 +52,14 @@ class Inventory(models.Model):
     def getVolume(self):
         return self.length * self.width * self.height
 
-    def getArea(self):
-        return
+    def getAarea(self):
+        return 2 * ((
+            self.length * self.width
+        ) + (
+            self.length * self.height
+        ) + (
+            self.height * self.width
+        ))
+
+    def __unicode__(self):
+        return "%s : %s" % (self.created_by, self.created)
