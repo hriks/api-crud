@@ -115,18 +115,13 @@ class All(views.View):
         try:
             data = request.GET.dict()
             inventories = Inventory.objects.all()
-            if True in [
-                field.split(
-                    '__')[0] in FILTERS for field, value in data.items()
-            ]:
-                filters_fields = list(
-                    set(data.keys()).intersection(set(FILTERS)))
-                params = dict()
-                for field in filters_fields:
+            params = dict()
+            for field in data.keys():
+                if field.split("__")[0] in FILTERS:
                     params.update(
-                        {'{0}'.format(field): data.get(field)}
+                        {'{0}'.format(field): float(data.get(field))}
                     )
-                inventories = inventories.filter(**params)
+            inventories = inventories.filter(**params)
             if user.is_staff:
                 inventories = inventories.annotate(
                     created_by_user=F('created_by__username')
@@ -158,16 +153,11 @@ class MyBoxes(views.View):
             if not user.is_staff:
                 raise AdminAccessException("User must be staff to add box")
             inventories = Inventory.objects.filter(created_by=user)
-            if True in [
-                field.split(
-                    '__')[0] in COMMON_FILTERS for field, value in data.items()
-            ]:
-                filters_fields = list(
-                    set(data.keys()).intersection(set(COMMON_FILTERS)))
-                params = dict()
-                for field in filters_fields:
+            params = dict()
+            for field in data.keys():
+                if field.split("__")[0] in FILTERS:
                     params.update(
-                        {'{0}'.format(field): data.get(field)}
+                        {'{0}'.format(field): float(data.get(field))}
                     )
                 inventories = inventories.filter(**params)
             inventories = inventories.annotate(
