@@ -28,6 +28,15 @@ class Inventory(models.Model):
     def addBox(cls, *args, **kwargs):
         return cls.objects.create(*args, **kwargs)
 
+    def update(self, data):
+        if data.get('height'):
+            self.height = data.get('height')
+        if data.get('width'):
+            self.width = data.get('width')
+        if data.get('length'):
+            self.length = data.get('length')
+        self.save()
+
     def assignReferenceNumber(self):
         temp_ref = 'Inventory:' + get_random_string(
             10, allowed_chars=ALLOWED_CHARS)

@@ -4,5 +4,6 @@ from apis import apis
 
 urlpatterns = [
     url(r'^', admin.site.urls),
-    url(r'^box/add', apis.Box.as_view())
+    url(r'^box/add', apis.ADD.as_view()),
+    url(r'^box/update', apis.Update.as_view()),
 ]

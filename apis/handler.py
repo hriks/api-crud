@@ -9,7 +9,10 @@ ERROR_CODES = {
     "INVN002": "User Doesnot Exists",
     "INVN003": "Invalid password provided",
     "INVN004": "Unable to process request. user is not staff",
-    "INVN005": "Either height, width or length not provided."
+    "INVN005": "Either height, width or length not provided.",
+    "INVN006": "No fields are provided to update",
+    "INVN007": "No Box found in Inventory with reference_no or reference_no not provided!",  # noqa
+    "INVN008": "Invalid value for fields are provided"
 }
 
 
