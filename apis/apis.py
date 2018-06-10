@@ -41,9 +41,9 @@ class ADD(views.View):
             height = data.get('height')
             width = data.get('width')
             length = data.get('length')
-            assert height.isdigit() and height is not None, "INVN005"
-            assert width.isdigit() and width is not None, "INVN005"
-            assert length.isdigit() and length is not None, "INVN005"
+            assert height is not None and height.isdigit(), "INVN005"
+            assert width is not None and width.isdigit(), "INVN005"
+            assert length is not None and length.isdigit(), "INVN005"
             inventory = Inventory.addBox(**{
                 'height': float(height), 'width': float(width),
                 'length': float(length), 'created_by': user

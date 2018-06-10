@@ -15,7 +15,7 @@ class Inventory(models.Model):
     length = models.FloatField(default=0.0)
     height = models.FloatField(default=0.0)
     width = models.FloatField(default=0.0)
-    created_by = models.ForeignKey(User)
+    created_by = models.ForeignKey(User, null=True, blank=True)
     modified = models.DateTimeField(auto_now=True)
     volume = models.FloatField(default=0.0)
     area = models.FloatField(default=0.0)

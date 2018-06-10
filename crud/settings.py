@@ -25,7 +25,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 SECRET_KEY = '9bj&ikplc^pd98jluf53g&nt&xr)2jp*!tbwig!ef84x_t-#qh'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -79,9 +79,13 @@ WSGI_APPLICATION = 'crud.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'sdyvspqo',
+        'USER': 'sdyvspqo',
+        'PASSWORD': 'R7tY4zq-EkUJGYujsKy2TdFCpI3DQK_A',
+        'HOST': 'stampy.db.elephantsql.com',
+        'PORT': '5432',
+    },
 }
 
 
